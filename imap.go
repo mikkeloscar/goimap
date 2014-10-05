@@ -140,7 +140,7 @@ func (c *IMAPClient) StoreFlag(id, flag string) error {
 	return resp.Error()
 }
 
-func (c *IMAPClient) StoreFlagAdd(id, flag string) error {
+func (c *IMAPClient) StoreAddFlag(id, flag string) error {
 	resp := c.Do(fmt.Sprintf("STORE %s +FLAGS %s", id, flag))
 	return resp.Error()
 }
