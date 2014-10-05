@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"encoding/base64"
-	"github.com/googollee/go-encoding-ex"
+	"github.com/googollee/go-encoding"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -42,13 +42,13 @@ Select:
 		}
 	}
 
-	encoding := msg.Header.Get("Content-Transfer-Encoding")
+	_encoding := msg.Header.Get("Content-Transfer-Encoding")
 	var reader io.Reader
-	switch encoding {
+	switch _encoding {
 	case "base64":
-		reader = base64.NewDecoder(base64.StdEncoding, encodingex.NewIgnoreReader(msg.Body, []byte("\r\n")))
+		reader = base64.NewDecoder(base64.StdEncoding, encoding.NewIgnoreReader(msg.Body, []byte("\r\n")))
 	case "quoted-printable":
-		reader = encodingex.NewQuotedPrintableDecoder(msg.Body)
+		reader = encoding.NewQuotedPrintableDecoder(msg.Body)
 	default:
 		reader = msg.Body
 	}

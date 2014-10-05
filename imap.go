@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/googollee/go-encoding-ex"
+	"github.com/googollee/go-encoding"
 	"net"
 	"net/mail"
 	"net/textproto"
@@ -92,6 +92,7 @@ func (c *IMAPClient) Login(user, password string) error {
 	return resp.err
 }
 
+// TODO fix this to return error
 func (c *IMAPClient) Select(box string) *Response {
 	return c.Do(fmt.Sprintf("SELECT %s", box))
 }
@@ -137,6 +138,32 @@ func (c *IMAPClient) Fetch(id, arg string) (string, error) {
 func (c *IMAPClient) StoreFlag(id, flag string) error {
 	resp := c.Do(fmt.Sprintf("STORE %s FLAGS %s", id, flag))
 	return resp.Error()
+}
+
+func (c *IMAPClient) StoreFlagAdd(id, flag string) error {
+	resp := c.Do(fmt.Sprintf("STORE %s +FLAGS %s", id, flag))
+	return resp.Error()
+}
+
+func (c *IMAPClient) Copy(id, dst string) error {
+	resp := c.Do(fmt.Sprintf("COPY %s %s", id, dst))
+	return resp.Error()
+}
+
+func (c *IMAPClient) Expunge() ([]string, error) {
+	resp := c.Do("EXPUNGE")
+	if resp.Error() != nil {
+		return nil, resp.Error()
+	}
+	expunged := []string{}
+	for _, reply := range resp.Replys() {
+		org := reply.Origin()
+		exp := strings.Split(org, " ")
+		if len(exp) == 2 && exp[1] == "EXPUNGE" {
+			expunged = append(expunged, exp[0])
+		}
+	}
+	return expunged, nil
 }
 
 func (c *IMAPClient) Logout() error {
@@ -192,11 +219,13 @@ func ParseAddress(str string) ([]*mail.Address, error) {
 			name := strings.Trim(s[:split], "\" ")
 			addr := s[split:]
 			if name[0] == '=' {
-				data, charset, err := encodingex.DecodeEncodedWord(name)
+				// data, charset, err := encoding.DecodeEncodedWord(name)
+				data, err := encoding.DecodeEncodedWord(name)
 				if err != nil {
 					return nil, fmt.Errorf("address %d invalid: %s", i, err)
 				}
-				data, err = encodingex.Conv(data, "UTF-8", charset)
+				// data, err = encoding.Conv(data, "UTF-8", charset)
+				data, err = encoding.Conv(data, "UTF-8", "x")
 				if err != nil {
 					return nil, fmt.Errorf("address %d convert charset error: %s", i, err)
 				}
