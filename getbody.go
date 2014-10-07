@@ -2,15 +2,16 @@ package imap
 
 import (
 	"bytes"
-	"net/mail"
-	"mime"
-	"fmt"
-	"mime/multipart"
 	"encoding/base64"
-	"github.com/googollee/go-encoding"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
+	"mime/multipart"
+	"net/mail"
 	"strings"
+
+	"github.com/googollee/go-encoding"
 )
 
 func GetBody(msg *mail.Message, preferType string) (string, string, string, error) {

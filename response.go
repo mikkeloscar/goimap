@@ -45,6 +45,7 @@ const (
 	feedStar
 	feedReply
 	feedReplyType
+	feedReplySize
 	feedReplyLength
 	feedReplyContent
 	feedReplyMeet0d
@@ -104,13 +105,23 @@ func (r *Response) Feed(input []byte) (bool, error) {
 			case byte(')'):
 				r.feedStatus = feedReply
 			case byte(' '):
-				if len(r.reply.type_) > 0 {
+				if string(r.reply.type_) == strings.ToUpper(RFC822Size) {
+					r.feedStatus = feedReplySize
+				} else if len(r.reply.type_) > 0 {
 					r.feedStatus = feedReplyLength
 				}
 			default:
 				r.reply.type_ = append(r.reply.type_, i)
 			}
 			r.reply.origin = append(r.reply.origin, i)
+		case feedReplySize:
+			r.reply.origin = append(r.reply.origin, i)
+			if i == byte(')') {
+				r.feedStatus = feedReply
+			}
+			if byte('0') <= i && i <= byte('9') {
+				r.reply.length = append(r.reply.length, i)
+			}
 		case feedReplyLength:
 			r.reply.origin = append(r.reply.origin, i)
 			if i == byte('\n') {
@@ -124,7 +135,7 @@ func (r *Response) Feed(input []byte) (bool, error) {
 			r.reply.content = append(r.reply.content, i)
 			i, err := r.reply.Length()
 			if err != nil {
-				return false, errors.New("Parse response error, reply need a valid length number")
+				return false, errors.New("parse response error, reply need a valid length number")
 			}
 			if len(r.reply.content) == i {
 				r.feedStatus = feedReply
@@ -163,7 +174,7 @@ func (r *Response) Feed(input []byte) (bool, error) {
 				r.buf = append(r.buf, byte('\r'), i)
 			}
 		case feedFinished:
-			return true, errors.New("Need no more feed")
+			return true, errors.New("need no more feed")
 		}
 	}
 	return false, nil

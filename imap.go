@@ -6,16 +6,18 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/googollee/go-encoding"
 	"net"
 	"net/mail"
 	"net/textproto"
 	"strings"
+
+	"github.com/googollee/go-encoding"
 )
 
 const (
 	RFC822Header = "rfc822.header"
 	RFC822Text   = "rfc822.text"
+	RFC822Size   = "rfc822.size"
 	Seen         = "\\Seen"
 	Deleted      = "\\Deleted"
 	Inbox        = "INBOX"
@@ -133,6 +135,30 @@ func (c *IMAPClient) Fetch(id, arg string) (string, error) {
 		}
 	}
 	return "", errors.New("Invalid response")
+}
+
+func (c *IMAPClient) GetMessageSize(id string) (int, error) {
+	resp := c.Do(fmt.Sprintf("FETCH %s %s", id, RFC822Size))
+	if resp.Error() != nil {
+		return 0, resp.Error()
+	}
+	for _, reply := range resp.Replys() {
+		org := reply.Origin()
+		if len(org) < len(id) || org[:len(id)] != id {
+			continue
+		}
+		org = org[len(id)+1:]
+		if len(org) >= 5 && strings.ToUpper(org[:5]) == "FETCH" {
+			if string(reply.type_) == strings.ToUpper(RFC822Size) {
+				size, err := reply.Length()
+				if err != nil {
+					return 0, err
+				}
+				return size, nil
+			}
+		}
+	}
+	return 0, errors.New("Invalid response")
 }
 
 func (c *IMAPClient) StoreFlag(id, flag string) error {
