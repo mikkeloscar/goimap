@@ -10,6 +10,7 @@ type reply struct {
 	origin  []byte
 	type_   []byte
 	length  []byte
+	value   []byte
 	content []byte
 }
 
@@ -29,9 +30,14 @@ func (r reply) Type() string {
 	return string(r.type_)
 }
 
-func (r reply) Length() (i int, err error) {
-	i, err = strconv.Atoi(string(r.length))
-	return
+func (r reply) Length() (int, error) {
+	i, err := strconv.Atoi(string(r.length))
+	return i, err
+}
+
+func (r reply) Value() (int, error) {
+	i, err := strconv.Atoi(string(r.value))
+	return i, err
 }
 
 func (r reply) Content() string {
@@ -45,7 +51,7 @@ const (
 	feedStar
 	feedReply
 	feedReplyType
-	feedReplySize
+	feedReplyValue
 	feedReplyLength
 	feedReplyContent
 	feedReplyMeet0d
@@ -105,22 +111,27 @@ func (r *Response) Feed(input []byte) (bool, error) {
 			case byte(')'):
 				r.feedStatus = feedReply
 			case byte(' '):
-				if string(r.reply.type_) == strings.ToUpper(RFC822Size) {
-					r.feedStatus = feedReplySize
-				} else if len(r.reply.type_) > 0 {
-					r.feedStatus = feedReplyLength
+				switch string(r.reply.type_) {
+				case RFC822Size:
+					fallthrough
+				case "UID":
+					r.feedStatus = feedReplyValue
+				default:
+					if len(r.reply.type_) > 0 {
+						r.feedStatus = feedReplyLength
+					}
 				}
 			default:
 				r.reply.type_ = append(r.reply.type_, i)
 			}
 			r.reply.origin = append(r.reply.origin, i)
-		case feedReplySize:
+		case feedReplyValue:
 			r.reply.origin = append(r.reply.origin, i)
 			if i == byte(')') {
 				r.feedStatus = feedReply
 			}
 			if byte('0') <= i && i <= byte('9') {
-				r.reply.length = append(r.reply.length, i)
+				r.reply.value = append(r.reply.value, i)
 			}
 		case feedReplyLength:
 			r.reply.origin = append(r.reply.origin, i)
