@@ -122,7 +122,34 @@ func (c *IMAPClient) Search(flag string) ([]string, error) {
 			return strings.Split(ids, " "), nil
 		}
 	}
-	return nil, errors.New("Invalid response")
+	return nil, errors.New("invalid response")
+}
+
+func (c *IMAPClient) Status(box string, arg string) error {
+	resp := c.Do(fmt.Sprintf("STATUS %s %s", box, arg))
+	if resp.Error() != nil {
+		return resp.Error()
+	}
+
+	return nil
+}
+
+func (c *IMAPClient) Create(box string) error {
+	resp := c.Do(fmt.Sprintf("CREATE %s", box))
+	if resp.Error() != nil {
+		return resp.Error()
+	}
+
+	return nil
+}
+
+func (c *IMAPClient) Subscribe(box string) error {
+	resp := c.Do(fmt.Sprintf("SUBSCRIBE %s", box))
+	if resp.Error() != nil {
+		return resp.Error()
+	}
+
+	return nil
 }
 
 func (c *IMAPClient) Fetch(id, arg string) (*IMAPResponse, error) {
@@ -144,7 +171,7 @@ func (c *IMAPClient) Fetch(id, arg string) (*IMAPResponse, error) {
 			return response, nil
 		}
 	}
-	return nil, errors.New("Invalid response")
+	return nil, errors.New("invalid response")
 }
 
 func (c *IMAPClient) GetMessageSize(id string) (int, error) {

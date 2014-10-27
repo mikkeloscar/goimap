@@ -121,6 +121,8 @@ func (r *Response) Feed(input []byte) (bool, error) {
 				switch string(r.reply.type_) {
 				case RFC822Size:
 					fallthrough
+				case "messages":
+					fallthrough
 				case "UID":
 					r.feedStatus = feedReplyValue
 				default:
