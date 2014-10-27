@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	RFC822       = "(RFC822)"
 	RFC822Header = "RFC822.HEADER"
 	RFC822Text   = "RFC822.TEXT"
 	RFC822Size   = "RFC822.SIZE"
@@ -137,10 +138,9 @@ func (c *IMAPClient) Fetch(id, arg string) (*IMAPResponse, error) {
 		org = org[len(id)+1:]
 		if len(org) >= 5 && strings.ToUpper(org[:5]) == "FETCH" {
 			body := reply.Content()
-			i := strings.Index(body, "\n")
 			length, _ := reply.Length()
 			value, _ := reply.Value()
-			response := &IMAPResponse{body[i+1:], length, value, reply.Type()}
+			response := &IMAPResponse{body, length, value, reply.Type()}
 			return response, nil
 		}
 	}
