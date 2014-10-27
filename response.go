@@ -50,6 +50,7 @@ const (
 	feedInit feedStatus = iota
 	feedStar
 	feedReply
+	feedReplyExtra
 	feedReplyType
 	feedReplyValue
 	feedReplyLength
@@ -106,6 +107,11 @@ func (r *Response) Feed(input []byte) (bool, error) {
 			default:
 				r.reply.origin = append(r.reply.origin, i)
 			}
+		case feedReplyExtra:
+			switch i {
+			case byte('\r'):
+				r.feedStatus = feedReplyMeet0d
+			}
 		case feedReplyType:
 			switch i {
 			case byte(')'):
@@ -149,7 +155,7 @@ func (r *Response) Feed(input []byte) (bool, error) {
 				return false, errors.New("parse response error, reply need a valid length number")
 			}
 			if len(r.reply.content) == i {
-				r.feedStatus = feedReply
+				r.feedStatus = feedReplyExtra
 			}
 		case feedReplyMeet0d:
 			if i == byte('\n') {
