@@ -107,6 +107,7 @@ func (r *Response) Feed(input []byte) (bool, error) {
 			default:
 				r.reply.origin = append(r.reply.origin, i)
 			}
+		// TODO add to a flags variable instead of skipping
 		case feedReplyExtra:
 			switch i {
 			case byte('\r'):
