@@ -17,7 +17,7 @@ Usage
     import (
         "fmt"
         "io/ioutil"
-        "imap"
+        imap "github.com/mikkeloscar/goimap"
         "net"
     )
 
