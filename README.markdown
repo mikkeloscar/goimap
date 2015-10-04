@@ -8,6 +8,7 @@ ATTENTION
 
 - Not fully implemented.
 - Only tested with GMail.
+- For GMail, you may need to create an app specific password on Google's account sign-in and security page. Use it in-place of your regular password when calling `IMAPClient.Login()`
 
 Usage
 -----
